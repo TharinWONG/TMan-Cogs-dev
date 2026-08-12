@@ -1,9 +1,9 @@
 
 # 1. 新增 TMan-Cogs
-[p]repo add tman-cogs https://github.com/TharinWONG/TMancogs
+[p]repo add tman-cogs-dev https://github.com/TharinWONG/TMan-Cogs-dev
 
 # 2. 安裝插件（此時 Bot 會自動幫你安裝 Pillow！）
-[p]cog install tman-cogs emotecutter
+[p]cog install tman-cogs-dev emotecutter
 
 # 3. 載入插件
 [p]load emotecutter
