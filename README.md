@@ -1,7 +1,7 @@
 # Installation
-`[p]repo add tman-cogs https://github.com/TharinWONG/TMan-Cogs`
+`[p]repo add tman-cogs-dev https://github.com/TharinWONG/TMan-Cogs-dev`
 
-`[p]cog install tman-cogs <cog_name>`
+`[p]cog install tman-cogs-dev <cog_name>`
 
 ---
 | Name           | Description (Click to see full status)    | Authors     |
