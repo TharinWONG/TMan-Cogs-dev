@@ -1,10 +1,6 @@
-"""
-AutoRole cog for Red-DiscordBot.
+"""AutoRole cog for Red-DiscordBot.
 
-Features:
-- Per-guild settings: enabled, role_id or role_name, delay (seconds), dm_message
-- Commands to set/unset role (by mention/ID or by name), enable/disable, set delay, set DM, show, test, reset
-- Permission & role-hierarchy checks before assignment
+放入 cogs/autorole/autorole.py
 """
 from __future__ import annotations
 
@@ -23,7 +19,6 @@ class AutoRole(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        # 用一個長整數 identifier，避免與其他 Cog 衝突
         self.config = Config.get_conf(self, identifier=0x5f2b3c4d6a7e8f90)
         default_guild = {
             "enabled": False,
@@ -31,20 +26,14 @@ class AutoRole(commands.Cog):
             "role_name": None,
             "delay": 0,
             "dm_message": None,
-            "restrict_guild": None,  # optional: lock to one guild id (if migrating from standalone)
+            "restrict_guild": None,
         }
         self.config.register_guild(**default_guild)
 
-    async def cog_load(self) -> None:
-        # 在需要時做初始化（目前無額外動作）
-        return None
-
     def _bot_member(self, guild: discord.Guild) -> Optional[discord.Member]:
-        # guild.me 係 preferred，fallback 用 guild.get_member
         return guild.me or guild.get_member(self.bot.user.id)
 
     async def _find_role(self, guild: discord.Guild, data: dict) -> Optional[discord.Role]:
-        # 先用 role_id，其次用 role_name
         role_id = data.get("role_id")
         role_name = data.get("role_name")
         if role_id:
@@ -66,7 +55,6 @@ class AutoRole(commands.Cog):
         if not data.get("enabled"):
             return
 
-        # optional restriction if migrating from standalone with a single guild target
         restrict = data.get("restrict_guild")
         if restrict and guild.id != restrict:
             return
@@ -76,7 +64,6 @@ class AutoRole(commands.Cog):
             return
 
         me = self._bot_member(guild)
-        # 權限檢查
         if me is None:
             return
         if not me.guild_permissions.manage_roles:
@@ -84,7 +71,6 @@ class AutoRole(commands.Cog):
         if role.position >= (me.top_role.position if me.top_role else 0):
             return
 
-        # optional delay
         delay = int(data.get("delay") or 0)
         if delay > 0:
             try:
@@ -121,13 +107,12 @@ class AutoRole(commands.Cog):
     async def set_role(self, ctx: commands.Context, role: discord.Role):
         """設定要自動指派的身分組（使用 mention 或 ID）。"""
         await self.config.guild(ctx.guild).role_id.set(role.id)
-        # 清除 role_name 以避免衝突
         await self.config.guild(ctx.guild).role_name.set(None)
         await ctx.send(f"已設定自動指派身分組為 **{role.name}**。")
 
     @autorole.command(name="setname")
     async def set_role_name(self, ctx: commands.Context, *, role_name: str):
-        """用身分組名稱設定要自動指派的身分組（若有重名請改用 ID）。"""
+        """用身分組名稱設定要自動指派的身分組（若重名請改用 ID）。"""
         await self.config.guild(ctx.guild).role_name.set(role_name)
         await self.config.guild(ctx.guild).role_id.set(None)
         await ctx.send(f"已設定以名稱搜尋身分組：**{role_name}**（請注意重名情況）。")
@@ -231,6 +216,5 @@ class AutoRole(commands.Cog):
         await ctx.send("已重置此伺服器的 AutoRole 設定。")
 
 
-# Red 要求的載入介面（async setup）
 async def setup(bot):
     await bot.add_cog(AutoRole(bot))
