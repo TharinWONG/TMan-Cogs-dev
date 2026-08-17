@@ -1,0 +1,12 @@
+{
+  "name": "AutoRole",
+  "short": "自動在新成員加入時指派身分組",
+  "description": "當新成員加入伺服器時自動指派預先設定的身分組，支援延遲與可選的歡迎私訊。",
+  "author": ["YourName"],
+  "install_msg": "感謝安裝 AutoRole。請使用 `autorole set <role>` 來設定欲自動指派的身分組。",
+  "requirements": [],
+  "tags": ["roles", "moderation", "utility"],
+  "min_bot_version": "3.5.0",
+  "hidden": false,
+  "end_user_data_statement": "會儲存每個伺服器設定的身分組 ID、延遲與歡迎私訊。"
+}
