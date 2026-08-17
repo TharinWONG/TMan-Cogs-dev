@@ -1,6 +1,12 @@
-"""AutoRole cog for Red-DiscordBot.
+"""
+AutoRole cog for Red-DiscordBot.
 
-放入 cogs/autorole/autorole.py
+Per-guild settings stored via Red Config:
+- enabled (bool)
+- role_id (int) or role_name (str)
+- delay (int seconds)
+- dm_message (str)
+- restrict_guild (int | None) optional for single-guild migration
 """
 from __future__ import annotations
 
@@ -15,10 +21,11 @@ __version__ = "1.0.0"
 
 
 class AutoRole(commands.Cog):
-    """自動在新成員加入時指派身分組（Red cog 版本）。"""
+    """自動在新成員加入時指派身分組（Red cog）。"""
 
     def __init__(self, bot):
         self.bot = bot
+        # identifier: 隨機長整數，避免與其他 cog 衝突
         self.config = Config.get_conf(self, identifier=0x5f2b3c4d6a7e8f90)
         default_guild = {
             "enabled": False,
@@ -55,6 +62,7 @@ class AutoRole(commands.Cog):
         if not data.get("enabled"):
             return
 
+        # optional single-guild restriction (keeps parity with original standalone)
         restrict = data.get("restrict_guild")
         if restrict and guild.id != restrict:
             return
@@ -105,17 +113,17 @@ class AutoRole(commands.Cog):
 
     @autorole.command(name="set")
     async def set_role(self, ctx: commands.Context, role: discord.Role):
-        """設定要自動指派的身分組（使用 mention 或 ID）。"""
+        """設定要自動指派的身分組（mention 或 ID）。"""
         await self.config.guild(ctx.guild).role_id.set(role.id)
         await self.config.guild(ctx.guild).role_name.set(None)
         await ctx.send(f"已設定自動指派身分組為 **{role.name}**。")
 
     @autorole.command(name="setname")
     async def set_role_name(self, ctx: commands.Context, *, role_name: str):
-        """用身分組名稱設定要自動指派的身分組（若重名請改用 ID）。"""
+        """用身分組名稱設定要自動指派的身分組（重名請用 ID）。"""
         await self.config.guild(ctx.guild).role_name.set(role_name)
         await self.config.guild(ctx.guild).role_id.set(None)
-        await ctx.send(f"已設定以名稱搜尋身分組：**{role_name}**（請注意重名情況）。")
+        await ctx.send(f"已設定以名稱搜尋身分組：**{role_name}**。")
 
     @autorole.command(name="unset")
     async def unset_role(self, ctx: commands.Context):
@@ -147,8 +155,7 @@ class AutoRole(commands.Cog):
 
     @autorole.command()
     async def dm(self, ctx: commands.Context, *, message: Optional[str] = None):
-        """設定在自動指派後要發送的私訊（可留空以清除）。
-        支援佔位符：{guild}、{member}、{mention}"""
+        """設定在自動指派後要發送的私訊（可留空以清除）。支援 {guild}、{member}、{mention}。"""
         await self.config.guild(ctx.guild).dm_message.set(message)
         if message:
             await ctx.send("已設定歡迎私訊。可使用 {guild}、{member}、{mention} 佔位符。")
@@ -216,5 +223,6 @@ class AutoRole(commands.Cog):
         await ctx.send("已重置此伺服器的 AutoRole 設定。")
 
 
+# Red 要求的載入介面（async setup）
 async def setup(bot):
     await bot.add_cog(AutoRole(bot))
